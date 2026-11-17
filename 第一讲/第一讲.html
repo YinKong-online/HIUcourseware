@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="indigo-code">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-content-type" content="presentation" />
+  <meta name="x-presentation-version" content="1.0" />
+  <meta name="x-presentation-indicator" content="deck-stage .slide" />
+  <title>第一讲 · Vibe Coding 与编程 Agent 入门</title>
+  <link rel="stylesheet" href="./_shared/fonts.css">
+  <link rel="stylesheet" href="./_shared/base.css">
+  <link rel="stylesheet" id="theme-link" href="./_shared/themes/indigo-code.css">
+  <link rel="stylesheet" href="./_shared/decorations.css">
+  <link rel="stylesheet" href="./_shared/animations/animations.css">
+  <style>
+    :root {
+      --soft-accent: color-mix(in srgb, var(--accent) 8%, var(--surface));
+      --soft-good: color-mix(in srgb, var(--good) 10%, var(--surface));
+    }
+    .slide { padding: 68px 92px; }
+    .kicker { margin: 0 0 14px; }
+    .h2 { max-width: 1420px; }
+    .lede { font-weight: 400; }
+    .notes { display: none; }
+    code { color: var(--accent); }
+    a { color: var(--text-3); text-decoration: none; }
+    a:hover { color: var(--accent); }
+    .source-line { position: absolute; left: 92px; bottom: 24px; font-family: var(--font-mono); font-size: 12px; color: var(--text-3); }
+    .source-line a { margin-left: 10px; }
+
+    /* 封面 */
+    .cover-slide {
+      padding: 0;
+      background:
+        radial-gradient(circle at 82% 22%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 32%),
+        radial-gradient(circle at 12% 86%, color-mix(in srgb, var(--accent) 42%, transparent), transparent 40%),
+        linear-gradient(135deg, var(--text-1), var(--text-2));
+      --grid-color: color-mix(in srgb, var(--bg) 9%, transparent);
+    }
+    .cover-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 84px 112px; }
+    .cover-content::after { content: "</>"; position: absolute; right: 108px; top: 50%; transform: translateY(-50%) rotate(-8deg); font-family: var(--font-mono); font-size: 250px; font-weight: 800; letter-spacing: -.12em; color: color-mix(in srgb, var(--bg) 8%, transparent); pointer-events: none; }
+    .cover-kicker { color: color-mix(in srgb, var(--bg) 72%, transparent); font-family: var(--font-mono); font-size: 18px; letter-spacing: .16em; margin-bottom: 30px; }
+    .cover-title { color: var(--bg); font-size: 142px; line-height: .98; letter-spacing: -.055em; margin: 0; max-width: 1300px; }
+    .cover-title .gradient-text { background-image: linear-gradient(135deg, var(--accent-3), var(--accent-2)); }
+    .cover-subtitle { color: color-mix(in srgb, var(--bg) 82%, transparent); font-size: 32px; line-height: 1.5; margin: 34px 0 0; max-width: 1100px; }
+    .cover-footer { position: absolute; left: 112px; right: 112px; bottom: 54px; display: flex; justify-content: space-between; color: color-mix(in srgb, var(--bg) 58%, transparent); font-family: var(--font-mono); font-size: 15px; }
+
+    /* 目录 */
+    .toc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 44px; }
+    .toc-grid > .card { min-height: 230px; padding: 34px 38px; display: grid; grid-template-columns: 82px 1fr; gap: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .toc-num { font-family: var(--font-mono); font-size: 44px; line-height: 1; color: var(--accent); font-weight: 800; }
+    .toc-grid h3 { font-size: 29px; margin: 0 0 14px; }
+    .toc-grid p { font-size: 19px; line-height: 1.6; margin: 0; color: var(--text-2); }
+
+    /* 通用三节点流程 */
+    .definition-flow { display: grid; grid-template-columns: 1fr 80px 1fr 80px 1fr; gap: 12px; align-items: center; margin-top: 54px; }
+    .definition-node { min-height: 286px; padding: 34px 30px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; justify-content: center; text-align: center; }
+    .definition-node.highlight { border: 2px solid var(--accent); background: var(--soft-accent); }
+    .node-id { font-family: var(--font-mono); font-size: 16px; color: var(--accent); letter-spacing: .12em; margin-bottom: 24px; }
+    .definition-node h3 { font-size: 31px; margin: 0 0 16px; }
+    .definition-node p { font-size: 18px; line-height: 1.65; color: var(--text-2); margin: 0; }
+    .definition-arrow { font-family: var(--font-mono); font-size: 48px; color: var(--accent-2); text-align: center; }
+    .definition-bottom { margin-top: 34px; padding: 22px 28px; border-left: 4px solid var(--accent-2); background: var(--surface-2); border-radius: 0 var(--radius) var(--radius) 0; font-size: 22px; color: var(--text-2); }
+    .definition-bottom strong { color: var(--text-1); }
+
+    /* Agent 对比 */
+    .agent-compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 42px; }
+    .agent-compare > .card { min-height: 490px; padding: 34px; border-radius: var(--radius-lg); border-top: 4px solid var(--text-3); }
+    .agent-compare > .card.agent-focus { border-top-color: var(--accent); background: var(--soft-accent); border-color: var(--accent); }
+    .comparison-label { display: inline-block; font-family: var(--font-mono); font-size: 13px; letter-spacing: .1em; color: var(--text-3); margin-bottom: 8px; }
+    .agent-compare h3 { font-size: 31px; margin: 16px 0; }
+    .agent-compare p { font-size: 17px; line-height: 1.6; color: var(--text-2); }
+    .agent-compare ul { padding-left: 20px; margin-top: 24px; color: var(--text-2); font-size: 17px; line-height: 1.9; }
+    .agent-compare .who { display: block; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--text-2); font-size: 15px; }
+    .agent-compare .who strong { color: var(--accent); }
+
+    /* 章节页 */
+    .section-slide { overflow: hidden; }
+    .section-index { position: absolute; right: 82px; bottom: -90px; font-family: var(--font-mono); font-size: 390px; line-height: 1; font-weight: 800; color: color-mix(in srgb, var(--accent) 7%, transparent); pointer-events: none; }
+    .section-content { position: relative; z-index: 2; max-width: 1400px; }
+    .section-slide .h1 { font-size: 96px; margin-bottom: 26px; }
+    .section-slide .lede { font-size: 27px; max-width: 980px; }
+    .section-rule { width: 128px; height: 7px; background: var(--grad); border-radius: 99px; margin: 34px 0; }
+
+    /* Agent 工具形态 */
+    .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 38px; }
+    .form-card { min-height: 510px; padding: 28px 26px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .form-card.harness { border-color: var(--accent-2); }
+    .tool-tag { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--accent); }
+    .form-card h3 { font-size: 27px; margin: 20px 0 12px; }
+    .form-card > p { font-size: 16px; line-height: 1.55; color: var(--text-2); min-height: 78px; }
+    .product-list { display: flex; flex-wrap: wrap; gap: 9px; margin: 24px 0; }
+    .product-list span { padding: 8px 11px; border-radius: 7px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-1); font-family: var(--font-mono); font-size: 14px; }
+    .form-example { display: block; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--text-2); font-size: 15px; line-height: 1.55; }
+    .form-example strong { display: block; color: var(--accent-2); font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; margin-bottom: 6px; }
+
+    /* Agent 解剖 */
+    .anatomy-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 44px; }
+    .anatomy-card { min-height: 410px; padding: 32px 28px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .anatomy-card:nth-child(4) { border-color: var(--accent-2); }
+    .anatomy-card .anatomy-en { font-family: var(--font-mono); color: var(--accent); font-size: 14px; }
+    .anatomy-card h3 { font-size: 30px; margin: 26px 0 16px; }
+    .anatomy-card p { font-size: 17px; line-height: 1.65; color: var(--text-2); }
+    .anatomy-card ul { padding-left: 18px; color: var(--text-2); font-size: 15px; line-height: 1.8; }
+
+    /* 准备 */
+    .setup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 42px; }
+    .setup-card { padding: 32px; min-height: 410px; background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--accent); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .setup-card h3 { font-size: 30px; margin: 14px 0; }
+    .setup-card p { font-size: 17px; line-height: 1.6; color: var(--text-2); }
+    .setup-card .step-label { font-family: var(--font-mono); color: var(--accent); font-size: 14px; }
+    .setup-check { margin-top: 24px; padding: 18px; background: var(--surface-2); border-radius: var(--radius); font-size: 16px; color: var(--text-2); }
+    .setup-check strong { display: block; color: var(--text-1); margin-bottom: 8px; }
+    .setup-note { margin-top: 24px; text-align: center; color: var(--text-2); font-size: 17px; line-height: 1.5; }
+
+    /* 软件生命周期 */
+    .lifecycle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-top: 50px; }
+    .life-item { position: relative; min-height: 300px; padding: 28px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow); }
+    .life-item:not(:last-child)::after { content: "→"; position: absolute; right: -19px; top: 46%; z-index: 3; color: var(--accent-2); font-family: var(--font-mono); font-size: 24px; }
+    .life-num { font-family: var(--font-mono); font-size: 15px; color: var(--accent); }
+    .life-item h3 { font-size: 25px; margin: 28px 0 16px; }
+    .life-item p { color: var(--text-2); font-size: 16px; line-height: 1.6; }
+    .life-item em { display: block; margin-top: 20px; color: var(--text-3); font-size: 13px; font-style: normal; }
+
+    /* 四步工作流 */
+    .process-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 56px; }
+    .process-steps > .step { min-height: 354px; padding: 34px 28px 28px; border-radius: var(--radius-lg); }
+    .process-steps .num { width: 54px; height: 54px; top: -27px; left: 26px; font-family: var(--font-mono); font-size: 18px; background: var(--grad); }
+    .process-steps h3 { font-size: 26px; margin: 22px 0 16px; }
+    .process-steps p { font-size: 17px; line-height: 1.65; color: var(--text-2); margin: 0; }
+    .process-output { display: block; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); color: var(--text-3); font-size: 14px; line-height: 1.5; }
+    .process-output strong { display: block; color: var(--accent); font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; margin-bottom: 5px; }
+    .iteration-loop { margin-top: 30px; padding: 19px 26px; background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: var(--radius); color: var(--text-2); font-size: 18px; text-align: center; }
+
+    /* 上下文与权限 */
+    .context-grid, .permission-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 42px; }
+    .context-card, .permission-card { min-height: 420px; padding: 30px 28px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .context-card .context-en, .permission-card .permission-en { font-family: var(--font-mono); color: var(--accent); font-size: 13px; }
+    .context-card h3, .permission-card h3 { font-size: 28px; margin: 24px 0 14px; }
+    .context-card p, .permission-card p { font-size: 16px; line-height: 1.65; color: var(--text-2); }
+    .context-example, .permission-example { display: block; margin-top: 24px; padding: 16px; background: var(--surface-2); border-radius: var(--radius); color: var(--text-2); font-size: 14px; line-height: 1.55; }
+    .permission-card:nth-child(3) { border-color: var(--bad); }
+    .permission-card:nth-child(3) .permission-en { color: var(--bad); }
+    .risk-label { display: inline-block; margin-top: 16px; font-family: var(--font-mono); font-size: 12px; color: var(--accent-2); }
+
+    /* Git 概念 */
+    .git-compare { display: grid; grid-template-columns: 1fr 90px 1fr; gap: 24px; margin-top: 46px; align-items: stretch; }
+    .git-compare > .card { padding: 38px 42px; border-radius: var(--radius-lg); }
+    .git-compare > .card:first-child { border-top: 4px solid var(--accent-2); }
+    .git-compare > .card:last-child { border-top: 4px solid var(--accent); }
+    .git-compare h3 { font-size: 42px; margin: 10px 0; }
+    .git-compare .en { font-family: var(--font-mono); color: var(--text-3); font-size: 14px; }
+    .git-compare p { font-size: 20px; color: var(--text-2); }
+    .git-compare ul { padding-left: 22px; color: var(--text-2); font-size: 18px; line-height: 1.9; }
+    .not-equal { display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 58px; color: var(--accent-2); }
+    .comparison-bottom { margin-top: 26px; text-align: center; font-size: 22px; color: var(--text-2); }
+    .comparison-bottom strong { color: var(--accent); }
+    .concept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 50px; }
+    .concept-card { min-height: 390px; padding: 36px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .concept-card .concept-en { font-family: var(--font-mono); font-size: 16px; color: var(--accent); }
+    .concept-card h3 { font-size: 34px; margin: 26px 0 18px; }
+    .concept-card p { font-size: 18px; line-height: 1.7; color: var(--text-2); }
+    .concept-example { display: block; margin-top: 26px; padding: 16px 18px; background: var(--surface-2); border-radius: var(--radius); color: var(--text-2); font-size: 15px; }
+    .git-flow { display: grid; grid-template-columns: 1fr 70px 1fr 70px 1fr; gap: 16px; align-items: center; margin-top: 48px; }
+    .git-state { min-height: 330px; padding: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow); }
+    .git-state h3 { font-size: 29px; margin: 20px 0 12px; }
+    .git-state p { font-size: 17px; line-height: 1.6; color: var(--text-2); }
+    .git-state code { display: block; margin-top: 24px; padding: 15px 10px; background: var(--surface-2); border-radius: var(--radius-sm); font-size: 16px; }
+    .git-arrow { text-align: center; color: var(--accent-2); font-size: 42px; font-family: var(--font-mono); }
+
+    /* 远程同步与 PR */
+    .sync-layout { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 34px; align-items: center; margin-top: 44px; }
+    .repo-box { min-height: 340px; padding: 36px; border: 2px solid var(--accent); border-radius: var(--radius-lg); background: var(--soft-accent); display: flex; flex-direction: column; justify-content: center; text-align: center; }
+    .repo-box h3 { font-size: 31px; margin: 16px 0; }
+    .repo-box p { font-size: 17px; color: var(--text-2); }
+    .sync-actions { display: grid; gap: 16px; }
+    .sync-action { padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .sync-action code { font-size: 19px; font-weight: 700; }
+    .sync-action strong { float: right; color: var(--accent-2); }
+    .sync-action p { margin: 8px 0 0; color: var(--text-2); font-size: 15px; }
+    .pr-flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-top: 52px; }
+    .pr-step { position: relative; min-height: 280px; padding: 28px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); text-align: center; }
+    .pr-step:not(:last-child)::after { content: "→"; position: absolute; right: -19px; top: 44%; color: var(--accent-2); font-size: 24px; z-index: 3; }
+    .pr-step .pr-num { font-family: var(--font-mono); color: var(--accent); font-size: 15px; }
+    .pr-step h3 { font-size: 23px; margin: 30px 0 14px; }
+    .pr-step p { color: var(--text-2); font-size: 15px; line-height: 1.55; }
+
+    /* 误区 */
+    .pitfall-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; margin-top: 34px; }
+    .pitfall { position: relative; padding: 26px 30px 24px 98px; min-height: 224px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+    .pitfall::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--bad); border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
+    .pitfall-num { position: absolute; left: 28px; top: 30px; font-family: var(--font-mono); font-size: 34px; font-weight: 800; color: color-mix(in srgb, var(--bad) 72%, var(--text-1)); }
+    .pitfall h3 { font-size: 25px; margin: 0 0 10px; }
+    .pitfall p { font-size: 16px; line-height: 1.55; color: var(--text-2); margin: 0; }
+    .pitfall .fix { display: block; margin-top: 13px; color: var(--good); font-size: 16px; line-height: 1.5; }
+    .pitfall .fix strong { font-family: var(--font-mono); font-size: 12px; margin-right: 8px; }
+    .pitfall-bottom { margin-top: 24px; text-align: center; color: var(--text-2); font-size: 20px; }
+
+    /* 总结与结语 */
+    .recap-chain { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-top: 52px; }
+    .recap-item { position: relative; min-height: 240px; padding: 28px 16px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); text-align: center; }
+    .recap-item:not(:last-child)::after { content: "→"; position: absolute; right: -17px; top: 42%; color: var(--accent-2); font-size: 22px; z-index: 3; }
+    .recap-item span { font-family: var(--font-mono); color: var(--accent); font-size: 14px; }
+    .recap-item h3 { font-size: 22px; margin: 28px 0 12px; }
+    .recap-item p { font-size: 14px; line-height: 1.5; color: var(--text-2); }
+    .recap-question { margin-top: 38px; text-align: center; font-size: 23px; color: var(--text-2); }
+    .recap-question strong { color: var(--accent); }
+    .closing-slide { background: var(--grad-soft); }
+    .closing-mark { font-family: var(--font-mono); color: var(--accent); font-size: 20px; letter-spacing: .16em; margin-bottom: 30px; }
+    .closing-slide .h1 { font-size: 100px; line-height: 1.14; }
+    .closing-slide .lede { margin: 28px auto 0; font-size: 25px; }
+
+  </style>
+  <link rel="stylesheet" href="../_shared/teaching-board.css">
+</head>
+<body data-themes="indigo-code,tokyo-night,catppuccin-mocha,scholar-teal" data-theme-base="./_shared/themes/">
+<deck-stage width="1920" height="1080">
+
+  <!-- 1 -->
+  <section class="slide cover-slide deco-grid active" data-deck-label="Vibe Coding 与编程 Agent">
+    <div class="cover-content">
+      <div class="cover-kicker">项目组第一讲 · AI CODING AGENTS & COLLABORATION</div>
+      <h1 class="cover-title">Vibe<br><span class="gradient-text">Coding</span></h1>
+      <p class="cover-subtitle">从编程 Agent，到 Git 与 GitHub 协作</p>
+      <div class="cover-footer"><span>Trae · DSH · Codex · Claude Code</span><span>01 / 24</span></div>
+    </div>
+    <div class="notes">开场直接纠正一个旧印象：今天的主角不是 VS Code，也不是简单代码补全，而是能读项目、改文件、跑命令的编程 Agent。今天只听懂工作流程，不要求把所有工具都装一遍。授课书写：按 B 或点击右下角“书写 B”呼出，Esc / B 关闭；W 切换标注、白板、黑板；P 画笔、H 荧光笔、E 橡皮、L 直线、A 箭头、R 矩形、C 圆形；Ctrl+Z 撤销、Ctrl+Y 重做，左右方向键继续翻页。</div>
+  </section>
+
+  <!-- 2 -->
+  <section class="slide deco-soft-gradient" data-deck-label="今天建立四张地图">
+    <p class="kicker">Agenda · 课程地图</p>
+    <h2 class="h2">今天建立四张地图</h2>
+    <p class="lede">不背产品按钮，先理解 Agent 为什么能开发、怎样安全地让它开发。</p>
+    <div class="toc-grid anim-stagger-list" data-anim-target>
+      <div class="card"><div class="toc-num">01</div><div><h3>Agent 认知</h3><p>模型、模型服务、补全、聊天和 Agent 到底差在哪里？</p></div></div>
+      <div class="card"><div class="toc-num">02</div><div><h3>工具地图</h3><p>Trae、DSH、Codex、Claude Code 等分别是什么形态？</p></div></div>
+      <div class="card"><div class="toc-num">03</div><div><h3>人机协作</h3><p>怎样写任务卡 / Spec、管权限、看 Diff、验证结果？</p></div></div>
+      <div class="card"><div class="toc-num">04</div><div><h3>版本与交付</h3><p>Agent 改完之后，怎样通过 Git 和 PR 进入团队项目？</p></div></div>
+    </div>
+    <div class="notes">说明课程定位：工具界面会变化，但 Agent 的上下文、工具调用、权限和验证闭环不会过时。90 分钟建议：目标与环境验收 10 分钟，模型与工具认知 20 分钟，工作流、Spec 和权限 20 分钟，教师演示 15 分钟，Git 与 PR 15 分钟，情境自测和总结 10 分钟。</div>
+  </section>
+
+  <!-- 3 -->
+  <section class="slide" data-deck-label="什么是 Vibe Coding">
+    <p class="kicker">01 · Mental Model</p>
+    <h2 class="h2">Vibe Coding：你负责目标、约束与验收，Agent 在授权范围内规划与执行</h2>
+    <p class="lede">不是让 AI 在聊天框里“写一段代码”，而是让它在真实项目中完成一个可验证任务。</p>
+    <div class="definition-flow anim-stagger-list" data-anim-target>
+      <div class="definition-node highlight"><span class="node-id">YOU / 01</span><h3>描述目标</h3><p>说清楚做什么、项目约束、不能动什么、怎样算完成。</p></div>
+      <div class="definition-arrow">→</div>
+      <div class="definition-node"><span class="node-id">AGENT / 02</span><h3>规划并行动</h3><p>读取项目、修改文件、调用终端，再根据结果继续调整。</p></div>
+      <div class="definition-arrow">→</div>
+      <div class="definition-node highlight"><span class="node-id">YOU / 03</span><h3>审查并验收</h3><p>看计划和 Diff，检查命令，运行测试，决定接受或返工。</p></div>
+    </div>
+    <div class="definition-bottom"><strong>Agent 可以执行开发动作，但不能替你承担结果。</strong> 能否交付，仍取决于你的判断与验证。</div>
+    <div class="notes">把“生成代码”与“完成任务”区分开。Agent 的价值是能在项目里连续采取行动，但行动越多，越需要权限控制、差异审查和运行验证。</div>
+  </section>
+
+  <!-- 4 -->
+  <section class="slide deco-soft-gradient" data-deck-label="补全、聊天与 Agent 的区别">
+    <p class="kicker">01 · Completion vs Chat vs Agent</p>
+    <h2 class="h2">补全、聊天、Agent：不是同一种工具</h2>
+    <div class="agent-compare anim-stagger-list" data-anim-target>
+      <div class="card"><span class="comparison-label">AUTOCOMPLETE</span><h3>代码补全</h3><p>根据当前位置预测下一段代码，适合加速局部输入。</p><ul><li>你看文件，它猜后续</li><li>通常围绕当前光标</li><li>不会独立完成整个任务</li></ul><span class="who"><strong>人：</strong>始终逐行主导实现</span></div>
+      <div class="card"><span class="comparison-label">CHAT</span><h3>聊天式助手</h3><p>根据对话生成解释、方案或代码片段，结果需要你自己集成。</p><ul><li>你提问，它给回答</li><li>你复制代码并处理依赖</li><li>你手动运行，再把报错贴回去</li></ul><span class="who"><strong>人：</strong>负责搬运、执行和串起步骤</span></div>
+      <div class="card agent-focus"><span class="comparison-label">CODING AGENT</span><h3>编程 Agent</h3><p>围绕目标在项目内连续执行动作，并根据工具结果调整后续计划。</p><ul><li>读取目录和多个文件</li><li>编辑代码、运行命令和测试</li><li>根据真实输出继续修复</li></ul><span class="who"><strong>人：</strong>定义任务、授权、审查与验收</span></div>
+    </div>
+    <div class="notes">VS Code 是编辑器，不天然等于 Vibe Coding；Cline 等扩展之所以属于 Agent，是因为它们能跨文件读写并执行命令。Trae、Cursor 等工具也包含编辑器界面，但我们学习的是其中的 Agent 工作方式。</div>
+  </section>
+
+  <!-- 5 -->
+  <section class="slide section-slide deco-soft-gradient" data-deck-label="模型、模型服务与 Agent">
+    <p class="kicker">02 · Three Layers</p>
+    <h2 class="h2">先分清三层：模型、模型服务、编程 Agent</h2>
+    <p class="lede">模型名和工具名不是一回事；Agent 的能力也不只取决于模型。</p>
+    <div class="definition-flow anim-stagger-list" data-anim-target>
+      <div class="definition-node"><span class="node-id">RAW MODEL / 01</span><h3>基础模型</h3><p>提供理解、推理和生成能力。模型本身不直接拥有你的项目文件、终端或工具权限。</p></div>
+      <div class="definition-arrow">→</div>
+      <div class="definition-node"><span class="node-id">MODEL SERVICE / 02</span><h3>模型服务</h3><p>把模型包装成可调用的服务，处理 API、鉴权、计费和限流，并暴露上下文等服务限制。</p></div>
+      <div class="definition-arrow">→</div>
+      <div class="definition-node highlight"><span class="node-id">CODING AGENT / 03</span><h3>编程 Agent</h3><p>接入模型服务，再组织上下文、工具、权限和循环，在真实项目中连续完成任务。</p></div>
+    </div>
+    <div class="definition-bottom"><strong>同一个模型可以被不同 Agent 使用，同一个 Agent 也可能切换模型。</strong> 模型强，不等于整个编程系统一定好用。</div>
+    <div class="notes">这里不讲训练、参数量或模型部署细节，只建立分层。Model Service 是模型能力的托管调用入口；Coding Agent 则加入项目工作区和行动能力。下一页再看 Trae、DSH、Codex、Claude Code 等产品形态，强调产品更新很快，不背按钮和价格。</div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-deck-label="四类编程 Agent 工具">
+    <p class="kicker">02 · Product Forms</p>
+    <h2 class="h2">主流工具，可以先按四种使用形态理解</h2>
+    <div class="form-grid anim-stagger-list" data-anim-target>
+      <div class="form-card"><span class="tool-tag">GUI / IDE AGENT</span><h3>图形界面 Agent</h3><p>在项目窗口里对话、看文件和 Diff，适合新人直观跟踪任务。</p><div class="product-list"><span>Trae</span><span>Cursor</span><span>Windsurf</span></div><span class="form-example"><strong>代表能力</strong>Trae 有 Agent / IDE 工作区和 SOLO；Cursor Agent 能编辑并执行终端；Windsurf 使用 Cascade。</span></div>
+      <div class="form-card"><span class="tool-tag">TERMINAL / CLI</span><h3>终端 Agent</h3><p>在项目目录启动，通过终端完成读、改、跑，适合深入工程流程。</p><div class="product-list"><span>Claude Code</span><span>Codex CLI</span><span>Cline</span></div><span class="form-example"><strong>代表能力</strong>Claude Code 与 Codex CLI 都能读取代码库、编辑文件、运行命令；Cline 也提供 CLI。</span></div>
+      <div class="form-card harness"><span class="tool-tag">OPEN AGENT HARNESS</span><h3>开放运行框架</h3><p>不只提供一个成品界面，还让你替换模型、工具、存储和 Agent 循环。</p><div class="product-list"><span>DSH / DeepSeek Harness</span></div><span class="form-example"><strong>代表能力</strong>DSH 采用插件化 Harness，适合理解 Agent 内部结构与后续二次开发；当前仍是 Developer Preview。</span></div>
+      <div class="form-card"><span class="tool-tag">CLOUD AGENT</span><h3>云端任务 Agent</h3><p>把 Issue 或任务交出去，在云端环境执行，再回来审查变更或 PR。</p><div class="product-list"><span>Codex Cloud</span><span>Copilot coding agent</span></div><span class="form-example"><strong>代表能力</strong>Codex Cloud 在托管环境执行任务；Copilot coding agent 可从 Issue 开始并产出 PR。</span></div>
+    </div>
+    <div class="source-line">官方资料（截至 2026-11-15）<a href="https://dshai.org/">[cite:1]</a><a href="https://docs.trae.ai/ide/get-started-with-trae-desktop?_lang=en">[cite:2]</a><a href="https://developers.openai.com/codex/cli">[cite:4]</a><a href="https://developers.openai.com/codex/cloud">[cite:5]</a><a href="https://code.claude.com/docs/en/overview">[cite:6]</a><a href="https://github.blog/ai-and-ml/github-copilot/github-copilot-coding-agent-101-getting-started-with-agentic-workflows-on-github/">[cite:9]</a><a href="https://docs.windsurf.com/zh/windsurf/cascade/cascade">[cite:10]</a><a href="https://cline.bot/faq">[cite:11]</a></div>
+    <div class="notes">产品可能跨形态，例如 Cline 也有 VS Code 扩展，Claude Code 也有 IDE、桌面和网页入口；这里按本课最典型的使用方式分类。DSH 与其他成品工具不完全同类，它更适合讲 Model 之外的 Harness，以及 Agent 组后续的可扩展开发。</div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide deco-soft-gradient" data-deck-label="Agent 为什么能干活">
+    <p class="kicker">02 · Agent Anatomy</p>
+    <h2 class="h2">换哪个产品，Agent 都绕不开这四个部分</h2>
+    <div class="anatomy-grid anim-stagger-list" data-anim-target>
+      <div class="anatomy-card"><span class="anatomy-en">MODEL</span><h3>模型</h3><p>负责理解、推理、规划和生成候选修改。</p><ul><li>理解自然语言任务</li><li>决定下一步做什么</li><li>生成代码与解释</li></ul></div>
+      <div class="anatomy-card"><span class="anatomy-en">CONTEXT</span><h3>上下文</h3><p>决定模型此刻能看到哪些项目事实和约束。</p><ul><li>相关文件与目录</li><li>需求、报错和文档</li><li>项目规则与历史对话</li></ul></div>
+      <div class="anatomy-card"><span class="anatomy-en">TOOLS</span><h3>工具</h3><p>让模型从“给建议”变成“对项目采取行动”。</p><ul><li>Read / Edit / Search</li><li>Terminal / Browser</li><li>Web / MCP 外部工具</li></ul></div>
+      <div class="anatomy-card"><span class="anatomy-en">HARNESS + LOOP</span><h3>运行框架与循环</h3><p>组织上下文和工具，把执行结果交回模型，直到完成或停止。</p><ul><li>权限与会话管理</li><li>观察 → 行动 → 结果</li><li>继续、停止或请求确认</li></ul></div>
+    </div>
+    <div class="definition-bottom"><strong>模型只是 Agent 的一部分。</strong> 工具、上下文和运行循环，决定了它能否在真实项目里稳定工作。</div>
+    <div class="source-line">结构依据<a href="https://dshai.org/">[cite:1]</a><a href="https://cursor.com/docs/agent/overview">[cite:8]</a><a href="https://docs.trae.ai/ide/agent?_lang=en">[cite:3]</a></div>
+    <div class="notes">这页是后续 Agent 开发课的入口。DSH 官方把 Model 与 Harness 区分开，Cursor 官方则用 Instructions、Tools、Model 描述 Agent。课堂上用统一语言归纳成 Model、Context、Tools、Harness + Loop，不要求新人现在实现。</div>
+  </section>
+
+  <!-- 8 -->
+  <section class="slide" data-deck-label="现场准备清单">
+    <p class="kicker">02 · Setup Check</p>
+    <h2 class="h2">学生先准备一个主工具，不在第一讲堆安装</h2>
+    <div class="setup-grid anim-stagger-list" data-anim-target>
+      <div class="setup-card"><span class="step-label">01 / PRIMARY AGENT</span><h3>安装并登录 Trae</h3><p>作为图形界面主工具，打开一个项目文件夹，能找到 Agent 工作区、文件列表和终端入口。</p><div class="setup-check"><strong>检查方式</strong>能登录、打开项目并进入 Agent 工作区；今天不执行正式任务。</div></div>
+      <div class="setup-card"><span class="step-label">02 / VERSION CONTROL</span><h3>安装并配置 Git</h3><p>配置用户名和邮箱，之后用来记录 Agent 和你共同完成的每一次有效修改。</p><div class="setup-check"><strong>检查方式</strong>终端执行 <code>git --version</code>，能显示版本号即可。</div></div>
+      <div class="setup-card"><span class="step-label">03 / COLLABORATION</span><h3>注册 GitHub 账号</h3><p>确认能登录并打开仓库页面，后续用于远程同步、PR 和团队评审。</p><div class="setup-check"><strong>检查方式</strong>能看到自己的个人主页，暂不创建正式项目。</div></div>
+    </div>
+    <p class="setup-note">教师演示机再按需准备 DSH、Codex CLI、Claude Code。DSH 官方当前要求 Node.js 18+ 且仍为 Developer Preview；学生后续按方向选装，不要求第一讲全部安装。</p>
+    <div class="notes">Git 配置命令：git config --global user.name "你的名字"，以及 git config --global user.email "你的 GitHub 邮箱"。主工具统一为 Trae 是为了减少课堂界面差异，不代表其他工具不重要；CLI Agent 和 DSH 后续按教学模块加入。现场准备只做验收，个别安装或登录故障课后单独处理，避免挤占主讲和演示时间。</div>
+  </section>
+
+  <!-- 9 -->
+  <section class="slide deco-soft-gradient" data-deck-label="软件是怎样形成的">
+    <p class="kicker">02 · Software Lifecycle</p>
+    <h2 class="h2">Agent 能参与开发，但软件不只有“写代码”</h2>
+    <div class="lifecycle anim-stagger-list" data-anim-target>
+      <div class="life-item"><span class="life-num">01</span><h3>需求</h3><p>明确给谁用、解决什么、不做什么、怎样算完成。</p><em>产出：任务卡 / Spec</em></div>
+      <div class="life-item"><span class="life-num">02</span><h3>设计</h3><p>确定页面、交互、接口和数据库结构。</p><em>产出：设计与验收细则</em></div>
+      <div class="life-item"><span class="life-num">03</span><h3>开发</h3><p>人与 Agent 实现功能并完成联调。</p><em>产出：候选代码</em></div>
+      <div class="life-item"><span class="life-num">04</span><h3>测试</h3><p>验证正常、异常和边界情况。</p><em>产出：测试证据</em></div>
+      <div class="life-item"><span class="life-num">05</span><h3>部署</h3><p>把程序发布到别人可以访问的环境。</p><em>产出：可访问版本</em></div>
+      <div class="life-item"><span class="life-num">06</span><h3>维护</h3><p>修复问题，根据反馈继续迭代。</p><em>产出：下一个版本</em></div>
+    </div>
+    <div class="definition-bottom"><strong>小任务写清任务卡，大任务先形成 Spec。</strong> Vibe Coding 是协作方式，Spec 是需求与验收载体，两者不矛盾。</div>
+    <div class="notes">Spec Coding / Spec-Driven Development 在今天只建立概念：小任务至少有目标、边界和验收标准；大任务或高风险修改先写 Spec，包括目标、非目标、约束、涉及模块、接口或数据变化以及验收方式。详细模板和编写练习留到第二讲。强调先设计再开发，“Agent 说完成”不等于通过验收。</div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide section-slide deco-soft-gradient" data-deck-label="Agent 核心工作流">
+    <div class="section-content"><p class="kicker anim-fade-down" data-anim="fade-down">03 · Human–Agent Workflow</p><h1 class="h1 anim-rise-in" data-anim="rise-in">Agent<span class="gradient-text">核心工作流</span></h1><div class="section-rule"></div><p class="lede">不是把项目交给 Agent 后离开，<br>而是在关键节点提供上下文、授权和验收。</p></div>
+    <div class="section-index">03</div>
+    <div class="notes">这一章把工具认知变成可复用流程。后续无论换 Trae、Claude Code、Codex 还是 DSH，都沿用同一套人机协作闭环。</div>
+  </section>
+
+  <!-- 11 -->
+  <section class="slide" data-deck-label="四步人机协作闭环">
+    <p class="kicker">03 · The Loop</p>
+    <h2 class="h2">每一次 Agent 任务，都走完这四步</h2>
+    <p class="lede">任务要可验收，上下文要相关，行动要可见，结果要有证据。</p>
+    <div class="process-steps anim-stagger-list" data-anim-target>
+      <div class="step"><div class="num">01</div><h3>给任务与验收</h3><p>描述目标、限制、涉及模块，以及必须通过的检查。</p><span class="process-output"><strong>OUTPUT</strong>一个边界清楚的小任务</span></div>
+      <div class="step"><div class="num">02</div><h3>补上下文看计划</h3><p>提供相关文件、设计文档和规则，先确认 Agent 理解正确。</p><span class="process-output"><strong>OUTPUT</strong>一份可审查的执行计划</span></div>
+      <div class="step"><div class="num">03</div><h3>监督工具与 Diff</h3><p>看它读了什么、改了什么、运行了什么，谨慎批准敏感操作。</p><span class="process-output"><strong>OUTPUT</strong>一组可解释的代码变更</span></div>
+      <div class="step"><div class="num">04</div><h3>运行验证再提交</h3><p>执行测试和手工验收，确认没有破坏原功能，再做 Git 提交。</p><span class="process-output"><strong>OUTPUT</strong>一个有证据的可交付版本</span></div>
+    </div>
+    <div class="iteration-loop">结果不符合预期？把<strong>完整报错 + 期望结果 + 实际结果</strong>交回 Agent，进入下一轮</div>
+    <div class="notes">Trae 的 SOLO、Codex 和 Claude Code 都能自动推进很多步骤，但人的检查点不能消失。尤其是修改数据库、删除文件、安装依赖和访问外部服务时，要先看行动范围。</div>
+  </section>
+
+  <!-- 12 -->
+  <section class="slide" data-deck-label="教师端到端演示">
+    <p class="kicker">03 · Teacher Demo</p>
+    <h2 class="h2">同一个任务，看 Agent 怎样从需求走到已验证 Diff</h2>
+    <p class="lede">演示任务：给登录表单增加必填校验，不改既有接口，完成后运行现有测试。</p>
+    <div class="process-steps anim-stagger-list" data-anim-target>
+      <div class="step"><div class="num">01</div><h3>写任务卡</h3><p>说清目标、约束和验收：空表单出现提示，正常登录功能不受影响。</p><span class="process-output"><strong>INPUT</strong>一个边界清楚、可以验收的小任务</span></div>
+      <div class="step"><div class="num">02</div><h3>看计划与权限</h3><p>让 Agent 先定位相关文件并给出计划；执行命令前，先确认它准备做什么。</p><span class="process-output"><strong>OBSERVE</strong>Read / Search / Terminal 与授权</span></div>
+      <div class="step"><div class="num">03</div><h3>修改并运行测试</h3><p>Agent 编辑代码和测试；失败时，把真实报错、期望结果和实际结果交回。</p><span class="process-output"><strong>EVIDENCE</strong>测试命令与真实运行结果</span></div>
+      <div class="step"><div class="num">04</div><h3>审查 Diff</h3><p>Diff 是修改前后的差异。只接受与本任务相关的变更，无关重写要返工。</p><span class="process-output"><strong>OUTPUT</strong>一个已验证、可解释的修改</span></div>
+    </div>
+    <div class="iteration-loop">演示先停在已验证 Diff；稍后 Git 章节再把<strong>同一个修改</strong> Commit、Push 并发起 PR</div>
+    <div class="notes">第一讲学生不动手，但教师必须完整演示一次。使用提前准备且能正常运行的小项目，现场按四步操作，不只放产品截图。重点口述：为什么这样写验收、为什么批准这条命令、Diff 中每处修改为任务服务、测试证据在哪里。准备截图或录屏兜底；若现场故障，仍按同一任务讲完决策过程。</div>
+  </section>
+
+  <!-- 13 -->
+  <section class="slide deco-soft-gradient" data-deck-label="上下文、规则、Tools、Skills 与 MCP">
+    <p class="kicker">03 · Context & Capabilities</p>
+    <h2 class="h2">Agent 的上下文与能力扩展</h2>
+    <div class="context-grid anim-stagger-list" data-anim-target>
+      <div class="context-card"><span class="context-en">CONTEXT</span><h3>上下文</h3><p>当前任务需要的事实：相关代码、设计文档、接口定义、报错和运行结果。</p><span class="context-example">原则：给相关信息，不是无脑塞入整个项目；让 Agent 能继续检索。</span></div>
+      <div class="context-card"><span class="context-en">RULES / INSTRUCTIONS</span><h3>项目规则</h3><p>长期约束：技术栈、目录约定、代码风格、测试命令和禁止事项。</p><span class="context-example">常见载体：AGENTS.md、CLAUDE.md、Trae Rules 等，名称随工具而不同。</span></div>
+      <div class="context-card"><span class="context-en">SKILLS</span><h3>可复用技能</h3><p>把某类任务的流程、说明、脚本和资源打包，在合适场景重复调用。</p><span class="context-example">它更像“可复用的任务作业指导书”，可以指导 Agent 调用工具。</span></div>
+      <div class="context-card"><span class="context-en">TOOLS + MCP</span><h3>工具与接入协议</h3><p>Tools 是 Read、Edit、Terminal 等具体动作；MCP 是接入外部工具和数据源的统一协议。</p><span class="context-example">MCP 本身不是一个具体工具；Server 配置、权限与安全后续单独讲。</span></div>
+    </div>
+    <div class="definition-bottom"><strong>Skill 告诉 Agent“怎么做”，Tools 让它“能够做”，MCP 负责“把外部能力接进来”。</strong> 当前会话不等于可靠的长期记忆。</div>
+    <div class="source-line">官方资料<a href="https://docs.trae.ai/ide/get-started-with-trae-desktop?_lang=en">[cite:2]</a><a href="https://code.claude.com/docs/en/best-practices">[cite:7]</a><a href="https://developers.openai.com/codex/cli">[cite:4]</a></div>
+    <div class="notes">上下文解决“知道什么”，规则解决“遵守什么”，Skills 封装“某类任务怎么做”，Tools 是“具体能执行的动作”，MCP 是“外部能力的接入协议”。新会话不一定记得旧会话；稳定项目事实和决策应进入文档或 Rules，可复用经验沉淀为 Skill。复杂长期记忆和 MCP 配置留到后续。</div>
+  </section>
+
+  <!-- 14 -->
+  <section class="slide" data-deck-label="Agent 权限与安全边界">
+    <p class="kicker">03 · Permissions & Safety</p>
+    <h2 class="h2">Agent 能行动，就必须有权限边界</h2>
+    <div class="permission-grid anim-stagger-list" data-anim-target>
+      <div class="permission-card"><span class="permission-en">READ</span><h3>读取</h3><p>读目录、文件和日志。通常风险较低，但敏感文件本身也可能包含密钥和个人信息。</p><span class="risk-label">检查：它能读哪些目录？</span><span class="permission-example">不要把无关密钥、私人资料放进项目工作区。</span></div>
+      <div class="permission-card"><span class="permission-en">EDIT / DIFF</span><h3>修改</h3><p>创建、编辑和删除文件。接受结果前先看 Diff，确认修改范围没有失控。</p><span class="risk-label">检查：改了什么、为什么？</span><span class="permission-example">无关格式化、大面积重写和意外删除要停下来问清。</span></div>
+      <div class="permission-card"><span class="permission-en">TERMINAL</span><h3>执行命令</h3><p>运行测试、安装依赖，也可能删除数据或修改系统配置，必须重点审查。</p><span class="risk-label">高风险：不懂的命令不批准</span><span class="permission-example">不要图省事长期开启无审查的全自动权限。</span></div>
+      <div class="permission-card"><span class="permission-en">NETWORK / MCP</span><h3>外部操作</h3><p>访问网络或第三方服务，可能上传代码、读取外部数据，甚至创建真实资源。</p><span class="risk-label">检查：数据去哪、有何副作用？</span><span class="permission-example">外部写入、部署、发消息等操作要单独确认。</span></div>
+    </div>
+    <div class="definition-bottom"><strong>Checkpoint 不等于 Git。</strong> 工具内的检查点适合撤销本次 Agent 修改；Git 才负责长期版本历史与团队协作。</div>
+    <div class="source-line">官方资料<a href="https://developers.openai.com/codex/cli">[cite:4]</a><a href="https://code.claude.com/docs/en/best-practices">[cite:7]</a><a href="https://cursor.com/docs/agent/overview">[cite:8]</a></div>
+    <div class="notes">Codex 有审批模式，Claude Code 有权限规则和 Sandbox，Cursor 官方明确说明 Checkpoints 与 Git 分离。这里不要求记住具体设置位置，只建立“读、改、执行、外部操作”四种风险意识。</div>
+  </section>
+
+  <!-- 15 -->
+  <section class="slide section-slide deco-soft-gradient" data-deck-label="Git 与 GitHub">
+    <div class="section-content"><p class="kicker anim-fade-down" data-anim="fade-down">04 · Version & Collaboration</p><h1 class="h1 anim-rise-in" data-anim="rise-in">Git 与 <span class="gradient-text">GitHub</span></h1><div class="section-rule"></div><p class="lede">Agent 可以快速改出很多代码，<br>Git 负责让这些变化可追踪、可审查、可协作。</p></div>
+    <div class="section-index">04</div>
+    <div class="notes">这一章衔接 Agent：每一次验证通过的修改都应该留下清晰提交，而不是让 Agent 连续改几个小时后才发现无法定位问题。</div>
+  </section>
+
+  <!-- 16 -->
+  <section class="slide deco-soft-gradient" data-deck-label="Git 不等于 GitHub">
+    <p class="kicker">04 · Git ≠ GitHub</p>
+    <h2 class="h2">先分清：Git 是工具，GitHub 是平台</h2>
+    <div class="git-compare">
+      <div class="card anim-fade-left" data-anim="fade-left"><span class="en">LOCAL VERSION CONTROL</span><h3>Git</h3><p>安装在电脑上的版本管理工具。</p><ul><li>记录每次提交和修改历史</li><li>创建分支，支持并行开发</li><li>查看差异，必要时回退版本</li></ul></div>
+      <div class="not-equal">≠</div>
+      <div class="card anim-fade-right" data-anim="fade-right"><span class="en">REMOTE HOSTING PLATFORM</span><h3>GitHub</h3><p>托管 Git 仓库的在线协作平台。</p><ul><li>保存远程仓库和提交历史</li><li>通过 PR 进行评审与合并</li><li>使用 Issues 记录任务和问题</li></ul></div>
+    </div>
+    <p class="comparison-bottom">没有 GitHub 也能使用 Git；团队协作时，通常让<strong>本地 Git + 远程 GitHub</strong>配合。</p>
+    <div class="notes">Git 不是自动保存，也不是简单备份。GitHub 是常见的 Git 托管与协作平台。云端 Agent 可以直接围绕 Issue 和 PR 工作，但底层仍然需要理解版本、分支和评审。</div>
+  </section>
+
+  <!-- 17 -->
+  <section class="slide" data-deck-label="Git 的三个核心概念">
+    <p class="kicker">04 · Core Concepts</p>
+    <h2 class="h2">Git 先记住三个词：仓库、提交、分支</h2>
+    <div class="concept-grid anim-stagger-list" data-anim-target>
+      <div class="concept-card"><span class="concept-en">REPOSITORY / REPO</span><h3>仓库</h3><p>一个由 Git 管理的项目，包含当前文件以及 Git 记录的历史信息。</p><span class="concept-example">理解：这是项目的“档案室”，不只是普通文件夹。</span></div>
+      <div class="concept-card"><span class="concept-en">COMMIT</span><h3>提交</h3><p>一次带有说明、作者和时间的信息快照，用来记录一组有意义的修改。</p><span class="concept-example">理解：Agent 完成并验证一个小步骤后，留下存档点。</span></div>
+      <div class="concept-card"><span class="concept-en">BRANCH</span><h3>分支</h3><p>一条独立的开发线，让你或 Agent 修改功能时不直接影响主分支。</p><span class="concept-example">理解：先在自己的线上改，验证后再合并。</span></div>
+    </div>
+    <div class="notes">Commit 不是按 Ctrl+S，也不是 Agent 每改一行就提交；它对应一个经过验证的小步骤。Branch 不是复制项目到另一个文件夹，而是 Git 管理的并行历史。</div>
+  </section>
+
+  <!-- 18 -->
+  <section class="slide deco-soft-gradient" data-deck-label="从 Agent 修改到 GitHub">
+    <p class="kicker">04 · Local → Remote</p>
+    <h2 class="h2">同一个修改：检查并提交，再同步到 GitHub</h2>
+    <div class="git-flow anim-stagger-list" data-anim-target>
+      <div class="git-state"><span class="node-id">WORKING DIRECTORY</span><h3>检查并暂存</h3><p>先核对 Agent 的 Diff 和测试，再只选择本次需要提交的文件。</p><code>git status</code><code>git add &lt;文件&gt;</code></div>
+      <div class="git-arrow">→</div>
+      <div class="git-state"><span class="node-id">LOCAL REPOSITORY</span><h3>本地提交</h3><p>生成有说明的历史快照，例如“添加登录表单校验”，不要只写 AI update。</p><code>git commit -m "说明"</code></div>
+      <div class="git-arrow">→</div>
+      <div class="git-state"><span class="node-id">REMOTE REPOSITORY</span><h3>远程同步</h3><p>Clone 用于首次获取项目，Pull 取回队友更新，Push 上传本地已有提交。</p><code>git push</code></div>
+    </div>
+    <div class="definition-bottom"><strong>Commit 只存在本地，Push 后才到 GitHub。</strong> 开始新 Agent 任务前先同步；具体命令练习留到第二讲。</div>
+    <div class="notes">用刚才演示的登录表单修改继续操作：先 git status 和 Diff，再 git add &lt;文件&gt;、git commit -m "添加登录表单校验"、git push。补充说明 git clone 通常只做一次，之后用 git pull 获取更新。今天只听懂流程，第二讲再逐项练习和处理冲突。让 Agent 执行 Git 命令前，同样要检查命令、当前分支和工作区。</div>
+  </section>
+
+  <!-- 19 -->
+  <section class="slide deco-soft-gradient" data-deck-label="GitHub PR 协作流程">
+    <p class="kicker">04 · Pull Request</p>
+    <h2 class="h2">PR：让 Agent 的修改经过确认，再进入主分支</h2>
+    <div class="pr-flow anim-stagger-list" data-anim-target>
+      <div class="pr-step"><span class="pr-num">01</span><h3>创建分支</h3><p>从最新主分支开始一个独立功能。</p></div>
+      <div class="pr-step"><span class="pr-num">02</span><h3>Agent 实现</h3><p>小步修改，审查工具调用与 Diff。</p></div>
+      <div class="pr-step"><span class="pr-num">03</span><h3>验证并推送</h3><p>测试、Commit，再把分支 Push 到 GitHub。</p></div>
+      <div class="pr-step"><span class="pr-num">04</span><h3>发起 PR</h3><p>说明改了什么、为什么、怎样验证。</p></div>
+      <div class="pr-step"><span class="pr-num">05</span><h3>评审修改</h3><p>队友查看代码，提出问题并继续改进。</p></div>
+      <div class="pr-step"><span class="pr-num">06</span><h3>合并主分支</h3><p>确认通过后，把修改合入共同版本。</p></div>
+    </div>
+    <div class="definition-bottom"><strong>无论代码来自人还是 Agent，都要经过同样的验收与评审。</strong> PR 让修改可见、可讨论、可追踪。</div>
+    <div class="notes">继续用刚才的登录表单校验修改：从功能分支 Push 到 GitHub，再发起 PR，描述修改内容、原因和测试结果。GitHub Copilot coding agent 和 Codex Cloud 都可以把任务结果带到 PR 流程，但自动创建 PR 不等于自动应该合并。</div>
+  </section>
+
+  <!-- 20 -->
+  <section class="slide section-slide deco-soft-gradient" data-deck-label="规范与常见误区">
+    <div class="section-content"><p class="kicker anim-fade-down" data-anim="fade-down">05 · Rules & Pitfalls</p><h1 class="h1 anim-rise-in" data-anim="rise-in">规范与<span class="gradient-text">常见误区</span></h1><div class="section-rule"></div><p class="lede">Agent 越快，越需要小步、审查和验证。<br>自动化程度越高，权限边界越重要。</p></div>
+    <div class="section-index">05</div>
+    <div class="notes">两组误区分别对应 Agent 行动风险和团队协作风险。核心不是禁止使用自动化，而是知道自动化的边界在哪里。</div>
+  </section>
+
+  <!-- 21 -->
+  <section class="slide" data-deck-label="Agent 使用四个误区">
+    <p class="kicker">05 · Agent Pitfalls</p>
+    <h2 class="h2">使用编程 Agent：四个必须避开的误区</h2>
+    <div class="pitfall-grid anim-stagger-list" data-anim-target>
+      <div class="pitfall"><span class="pitfall-num">01</span><h3>一次派发整个项目</h3><p>上下文和修改范围一起膨胀，出错后很难定位，也难以审查。</p><span class="fix"><strong>改成</strong>拆成有边界、有验收、能独立提交的小任务。</span></div>
+      <div class="pitfall"><span class="pitfall-num">02</span><h3>不给项目事实与规则</h3><p>Agent 只能猜技术栈和目录约定，生成的修改可能南辕北辙。</p><span class="fix"><strong>改成</strong>提供相关文件、设计文档、项目规则和真实报错。</span></div>
+      <div class="pitfall"><span class="pitfall-num">03</span><h3>全自动批准，不看 Diff</h3><p>无关重写、危险命令和敏感信息外发，都可能在无感中发生。</p><span class="fix"><strong>改成</strong>按风险授权，审查命令、修改范围和外部操作。</span></div>
+      <div class="pitfall"><span class="pitfall-num">04</span><h3>Agent 说完成就算完成</h3><p>测试可能没跑、边界可能没测，甚至原有功能已经被破坏。</p><span class="fix"><strong>改成</strong>亲自核对测试与运行结果，通过后再 Commit 和 PR。</span></div>
+    </div>
+    <p class="pitfall-bottom">原则：<strong>Agent 可以自动行动，但人必须保留关键检查点。</strong></p>
+    <div class="notes">可以对比两种提示：“帮我做完整个商城”与“先实现商品列表，字段按设计文档，完成后运行现有测试并展示 Diff”。后者边界、依据和验收都更明确。</div>
+  </section>
+
+  <!-- 22 -->
+  <section class="slide deco-soft-gradient" data-deck-label="Git 与 GitHub 四个误区">
+    <p class="kicker">05 · Git & GitHub Pitfalls</p>
+    <h2 class="h2">Git 与 GitHub：四个必须避开的误区</h2>
+    <div class="pitfall-grid anim-stagger-list" data-anim-target>
+      <div class="pitfall"><span class="pitfall-num">01</span><h3>把密钥和 .env 提交上去</h3><p>一旦推送，密钥可能已经泄露；仅删除文件不代表历史也干净。</p><span class="fix"><strong>改成</strong>提前配置 .gitignore；已泄露的密钥立即更换。</span></div>
+      <div class="pitfall"><span class="pitfall-num">02</span><h3>人或 Agent 直接修改 main</h3><p>未验证的代码不断进入主分支，团队共同版本随时可能无法运行。</p><span class="fix"><strong>改成</strong>使用功能分支，经过验证、PR 和评审后合并。</span></div>
+      <div class="pitfall"><span class="pitfall-num">03</span><h3>不检查就盲目 git add .</h3><p>可能把 Agent 生成的临时文件、构建产物和敏感信息一起提交。</p><span class="fix"><strong>改成</strong>先 git status 和查看差异，再选择需要提交的文件。</span></div>
+      <div class="pitfall"><span class="pitfall-num">04</span><h3>让 Agent 硬删或强制回退</h3><p>可能把自己和队友的有效修改一起丢掉，让历史更加混乱。</p><span class="fix"><strong>改成</strong>先保留现场、看清双方差异，再讨论如何合并。</span></div>
+    </div>
+    <p class="pitfall-bottom">习惯：<strong>小步提交、写清说明、开始任务先同步、主分支只通过 PR 更新。</strong></p>
+    <div class="notes">.gitignore 应尽早配置，典型忽略项包括 .env、node_modules、__pycache__ 和构建产物。禁止让 Agent 在未说明后果时执行 reset --hard、clean -f、push --force 等破坏性操作。</div>
+  </section>
+
+  <!-- 23 -->
+  <section class="slide" data-deck-label="第一讲完整流程总结">
+    <p class="kicker">Recap · The Whole Picture</p>
+    <h2 class="h2">现在，你应该能讲清这条 Agent 开发链路</h2>
+    <div class="recap-chain anim-stagger-list" data-anim-target>
+      <div class="recap-item"><span>01</span><h3>明确需求</h3><p>写清任务卡 / Spec 与验收</p></div>
+      <div class="recap-item"><span>02</span><h3>选择 Agent</h3><p>分清模型服务与工具形态</p></div>
+      <div class="recap-item"><span>03</span><h3>规划与执行</h3><p>读取、修改、调用工具</p></div>
+      <div class="recap-item"><span>04</span><h3>审查与验证</h3><p>看权限、Diff 和测试结果</p></div>
+      <div class="recap-item"><span>05</span><h3>Git 提交</h3><p>留下清晰的版本快照</p></div>
+      <div class="recap-item"><span>06</span><h3>PR 交付</h3><p>评审后进入共同版本</p></div>
+    </div>
+    <p class="recap-question">情境自测：<strong>① 没跑测试能 Commit 吗？② 不懂的删除命令能批准吗？③ Push 后代码已经进 main 了吗？</strong></p>
+    <div class="notes">让学生先判断再说理由。① 不能，Agent 说完成不等于验收通过，必须先核对 Diff 和真实测试结果；② 不能，先问清命令、作用范围和后果；③ 不一定，Push 只是把提交上传到远程分支，通常还要经过 PR、评审和 Merge。最后追问：为什么 Checkpoint 不能代替 Git？</div>
+  </section>
+
+  <!-- 24 -->
+  <section class="slide closing-slide center" data-deck-label="结语">
+    <div><div class="closing-mark">LESSON 01 / COMPLETE</div><h1 class="h1 anim-fade-up" data-anim="fade-up">工具会更新，<br><span class="gradient-text">工作流不会过时。</span></h1><p class="lede">第二讲：用一个编程 Agent 完成小任务，再做 Commit、Push 和 Pull Request。</p></div>
+    <div class="notes">收尾强调：不要以记住了多少产品名为目标，而要能解释 Agent 的上下文、工具、权限和验证闭环。第二讲统一用一个主工具实操，再展示同类工具如何迁移。</div>
+  </section>
+
+</deck-stage>
+<script src="../_shared/teaching-board.js"></script>
+<script src="./_shared/runtime.js"></script>
+</body>
+</html>
